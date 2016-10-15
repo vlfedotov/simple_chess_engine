@@ -25,22 +25,22 @@ class Opponent(object):
 
     def make_priority_moves_map(self):
         move_values = {'kill' :  {'q': float('inf'),
-                                  'r': 70,
-                                  'b': 60,
-                                  'k': 60},
-                       'save' :  {'q': 100,
-                                  'r': 50,
-                                  'b': 20,
-                                  'k': 20},
-                       'attack': {'q': 25,
                                   'r': 15,
-                                  'b': 10,
-                                  'k': 10},
-                       'avail_moves': 'sdf',
+                                  'b': 9,
+                                  'k': 9},
+                       'save' :  {'q': 100,
+                                  'r': 10,
+                                  'b': 5,
+                                  'k': 5},
+                       'attack': {'q': 8,
+                                  'r': 3,
+                                  'b': 1,
+                                  'k': 1},
                        }
 
         self.priority_move_queue = []
 
+        move_idx = 0
         for figure in self.figures:
             # print(figure.name)
             if figure.cell in self.opponent.avail_moves:
@@ -52,11 +52,10 @@ class Opponent(object):
             for move in (figure.avail_moves - self.occupation):
                 move_points = 0
                 if move in self.opponent.occupation:
-
                     move_points += move_values['kill'][self.board.get_figure(move).name.lower()]
                     # print('kill', move, move_points)
-                attack_oppontunity = figure.check_move(move) & self.opponent.occupation
-                for attack in attack_oppontunity:
+                attack_opportunity = figure.check_move(move) & self.opponent.occupation
+                for attack in attack_opportunity:
                     move_points += move_values['attack'][self.board.get_figure(attack).name.lower()]
                     # print('attack move', move, move_points)
                 danger_move = move in self.opponent.avail_moves
@@ -68,17 +67,24 @@ class Opponent(object):
                     if save_opportunity:
                         move_points += move_values['save'][figure.name.lower()]
                         # print('save move', move)
-                move_points += len(figure.check_move(move))/2
-                self.priority_move_queue.append((move_points, figure, move))
+                # move_points += len(figure.check_move(move))/2
+                move_summary = (move_points, move_idx, figure, move)
+                self.priority_move_queue.append(move_summary)
+                move_idx += 1
+                # print(move_summary)
 
         self.priority_move_queue = sorted(self.priority_move_queue, reverse=True)
 
     # TODO
     def make_best_move(self):
-        _, figure, to_cell = self.priority_move_queue.pop(0)
+        self.make_priority_moves_map()
+        *_, figure, to_cell = self.priority_move_queue.pop(0)
+        print(figure.name, figure.cell, to_cell)
         self.remove_figure(figure)
-        self.opponent.remove_figure(self.board.get_figure(to_cell))
+        if to_cell in self.opponent.occupation:
+            self.opponent.remove_figure(self.board.get_figure(to_cell))
         figure.cell = to_cell
+        figure.avail_moves = figure.get_avail_moves() - {figure.cell}
         self.add_figure(figure)
 
     def update_all_available_moves(self):

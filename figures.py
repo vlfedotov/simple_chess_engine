@@ -21,9 +21,9 @@ class Figure(object):
     def check_move(self, target_cell):
         return self.get_avail_moves(target_cell) - {self.cell}
 
-    def __set__(self, key, value):
-        setattr(self, key, value)
-        self.avail_moves = self.get_avail_moves() - {self.cell}
+    # def __set__(self, key, value):
+    #     setattr(key, self.cell, value)
+    #     self.avail_moves = self.get_avail_moves(value) - {self.cell}
 
 
 class Queen(Figure):
@@ -60,7 +60,7 @@ class Bishop(Figure):
         let_idx = ALPHA.index(cell[0])
         for i in range(-let_idx, len(self.board_table)-let_idx):
             try:
-                if cell[1]-1+i > 0:
+                if cell[1]-1+i >= 0:
                     c = self.board_table[let_idx+i][cell[1]-1+i]
                     diag_moves.add(c.position)
             except IndexError:
