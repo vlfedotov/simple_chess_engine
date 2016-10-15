@@ -2,9 +2,6 @@ ALPHA = 'abcdefgh'
 
 class Cell(object):
     def __init__(self, position):
-        # position - tuple
-        # ('b', 2)
-        # ('c', 4)
         self.position = position
         self.available = True
         self.has_figure = None
@@ -39,9 +36,13 @@ class Board(object):
         c = self.board[ALPHA.index(cell[0])][cell[1]-1]
         c.occupy(fig)
 
-    def remove_fig(self, fig, cell):
+    def remove_fig(self, cell):
         c = self.board[ALPHA.index(cell[0])][cell[1]-1]
         c.free()
+
+    def get_figure(self, cell):
+        c = self.board[ALPHA.index(cell[0])][cell[1] - 1]
+        return c.has_figure
 
     def show_board(self):
         self.sh_board = list(zip(*self.board))
