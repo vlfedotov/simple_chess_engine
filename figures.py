@@ -7,7 +7,7 @@ class Figure(object):
         self.name = name
         self.opponent = opponent
         self.board_table = self.opponent.board.board
-        self.avail_moves = self.get_avail_moves() - {self.cell}
+        self.avail_moves = set()  # self.get_avail_moves() - {self.cell}
         self.is_under_attack = False
         opponent.add_figure(self)
 

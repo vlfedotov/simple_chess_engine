@@ -1,11 +1,12 @@
 class Opponent(object):
-    def __init__(self, board, opponent=None):
+    def __init__(self, board, opponent=None, level=1):
         self.occupation = set()  # cells
         self.board = board
         self.figures = []
         self.avail_moves = set()
         self.priority_move_queue = []
         self.opponent = opponent
+        self.level = level
 
     def setup_opponent(self, opponent):
         self.opponent = opponent
@@ -23,7 +24,11 @@ class Opponent(object):
         self.board.remove_fig(figure.cell)
         self.update_all_available_moves()
 
-    def make_priority_moves_map(self):
+    # TODO
+    # redesign priority_map based on level of the gamer
+    # higher the level - more moves further
+    # the gamer should "think"
+    def make_priority_moves_map(self, level):
         move_values = {'kill' :  {'q': float('inf'),
                                   'r': 15,
                                   'b': 9,
