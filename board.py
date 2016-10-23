@@ -49,8 +49,12 @@ class Board(object):
         for column in reversed(self.sh_board):
             print('\n')
             for cell in column:
-                sym = cell.has_figure.name if cell.has_figure else '.'
-                print(sym, end='')
+                if (ALPHA.index(cell.position[0]) + cell.position[1]) % 2 == 0:
+                    sym = '-'
+                else:
+                    sym = "'"
+                sym_cell = cell.has_figure.name if cell.has_figure else sym
+                print(sym_cell, end='  ')
 
     def __repr__(self):        
         return 'Board({}x{})'.format(len(self.board),

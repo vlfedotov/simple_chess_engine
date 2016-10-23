@@ -16,19 +16,24 @@ class Opponent(object):
         self.board.setup_fig(figure, figure.cell)
         self.figures.append(figure)
         self.occupation.add(figure.cell)
-        self.update_all_available_moves()
+        # self.update_all_available_moves()
+
+    def move_figure(self, figure, to_cell):
+        self.remove_figure(figure)
+        figure.cell = to_cell
+        self.add_figure(figure)
 
     def remove_figure(self, figure):
         self.occupation.remove(figure.cell)
         self.figures.remove(figure)
         self.board.remove_fig(figure.cell)
-        self.update_all_available_moves()
+        # self.update_all_available_moves()
 
     # TODO
     # redesign priority_map based on level of the gamer
     # higher the level - more moves further
     # the gamer should "think"
-    def make_priority_moves_map(self, level):
+    def make_priority_moves_map(self):  # , level):
         move_values = {'kill' :  {'q': float('inf'),
                                   'r': 15,
                                   'b': 9,
@@ -43,10 +48,11 @@ class Opponent(object):
                                   'k': 1},
                        }
 
-        self.priority_move_queue = []
+        priority_move_queue = []
 
         move_idx = 0
         for figure in self.figures:
+            # figure.avail_moves = figure.get_avail_moves()
             # print(figure.name)
             if figure.cell in self.opponent.avail_moves:
                 figure.is_under_attack = True
@@ -54,12 +60,12 @@ class Opponent(object):
             else:
                 figure.is_under_attack = False
 
-            for move in (figure.avail_moves - self.occupation):
+            for move in figure.avail_moves:
                 move_points = 0
                 if move in self.opponent.occupation:
                     move_points += move_values['kill'][self.board.get_figure(move).name.lower()]
                     # print('kill', move, move_points)
-                attack_opportunity = figure.check_move(move) & self.opponent.occupation
+                attack_opportunity = figure.get_avail_moves(move) & self.opponent.occupation
                 for attack in attack_opportunity:
                     move_points += move_values['attack'][self.board.get_figure(attack).name.lower()]
                     # print('attack move', move, move_points)
@@ -74,33 +80,37 @@ class Opponent(object):
                         # print('save move', move)
                 # move_points += len(figure.check_move(move))/2
                 move_summary = (move_points, move_idx, figure, move)
-                self.priority_move_queue.append(move_summary)
+                priority_move_queue.append(move_summary)
                 move_idx += 1
                 # print(move_summary)
 
-        self.priority_move_queue = sorted(self.priority_move_queue, reverse=True)
+        self.priority_move_queue = sorted(priority_move_queue, reverse=True)
 
     # TODO
     def make_best_move(self):
+        self.update_all_available_moves()
         self.make_priority_moves_map()
         *_, figure, to_cell = self.priority_move_queue.pop(0)
         print(figure.name, figure.cell, to_cell)
-        self.remove_figure(figure)
+        # self.remove_figure(figure)
         if to_cell in self.opponent.occupation:
             self.opponent.remove_figure(self.board.get_figure(to_cell))
-        figure.cell = to_cell
-        figure.avail_moves = figure.get_avail_moves() - {figure.cell}
-        self.add_figure(figure)
+        self.move_figure(figure, to_cell)
+        self.update_all_available_moves()
+        # figure.cell = to_cell
+        # figure.avail_moves = figure.get_avail_moves()
+        # self.add_figure(figure)
 
     def update_all_available_moves(self):
         self.avail_moves = set()
         for figure in self.figures:
+            figure.avail_moves = figure.get_avail_moves()
             self.avail_moves |= figure.avail_moves
         # TODO
         # if figures support each other
         # do not remove then
-        for occ in self.occupation:
-            self.avail_moves -= {occ}
+        # for occ in self.occupation:
+        #     self.avail_moves -= {occ}
 
     def correct_fig_name(self, figure):
         if isinstance(self, Blacks):
